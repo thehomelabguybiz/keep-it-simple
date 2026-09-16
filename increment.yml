@@ -6,7 +6,7 @@
     repo_dir: "/opt/auto_increment_repo"
     file_name: "number.txt"
     # Notice the SSH URL instead of HTTPS
-    git_repo_url: "git@github.com:thehomelabguybiz/ansiable.git"
+    git_repo_url: "git@github.com:thehomelabguybiz/keep-it-simple.git"
     
   tasks:
     - name: Ensure git is installed on the server
