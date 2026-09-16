@@ -1,0 +1,53 @@
+---
+- name: Read, Increment, and Push back to GitHub
+  hosts: all
+  become: yes
+  vars:
+    # We create a folder on your server to hold the code
+    repo_dir: "/opt/auto_increment_repo"
+    file_name: "number.txt"
+    # Replace <YOUR_TOKEN> with a GitHub Personal Access Token
+    git_repo_url: "https://<YOUR_TOKEN>@github.com/thehomelabguybiz/ansiable.git"
+    
+  tasks:
+    - name: Ensure git is installed on the server
+      apt:
+        name: git
+        state: present
+
+    - name: Clone the repository to the server
+      git:
+        repo: "{{ git_repo_url }}"
+        dest: "{{ repo_dir }}"
+        version: main
+        update: yes
+
+    - name: Read the current number from the file
+      command: cat "{{ repo_dir }}/{{ file_name }}"
+      register: current_number
+      ignore_errors: yes
+
+    - name: Set current value (Defaults to 0 if file is empty or missing)
+      set_fact:
+        current_val: "{{ current_number.stdout | default('0', true) | int }}"
+
+    - name: Add +1 to the number
+      set_fact:
+        new_val: "{{ current_val + 1 }}"
+
+    - name: Write the new number to the file
+      copy:
+        dest: "{{ repo_dir }}/{{ file_name }}"
+        content: "{{ new_val }}"
+
+    - name: Commit and push the updated file back to GitHub
+      shell: |
+        git config user.email "semaphore@homelab"
+        git config user.name "Semaphore Bot"
+        git add {{ file_name }}
+        git commit -m "Auto-incremented to {{ new_val }}"
+        git push origin main
+      args:
+        chdir: "{{ repo_dir }}"
+      # We ignore errors just in case there are no changes to commit
+      ignore_errors: yes
