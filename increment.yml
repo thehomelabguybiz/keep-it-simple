@@ -37,11 +37,11 @@
 
     - name: Set current value (Defaults to 0 if file is empty or missing)
       set_fact:
-        current_val: "{{ current_number.stdout | default('0', true) | int }}"
+        current_val: "{{ current_number.stdout | trim | default('0', true) }}"
 
     - name: Add +1 to the number
       set_fact:
-        new_val: "{{ current_val + 1 }}"
+        new_val: "{{ current_val | int + 1 }}"
 
     - name: Write the new number to the file
       copy:
